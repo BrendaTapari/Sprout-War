@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { analyzePlantStats, type PlantStats } from "@/lib/analyze-plant";
+import { analyzePlantStats, withMoreLife, type PlantStats } from "@/lib/analyze-plant";
 import { CameraCapture } from "@/components/camera-capture";
 import { PlantSprite } from "@/components/plant-sprite";
 import { PhotoCountdown, usePhotoClock } from "@/components/photo-countdown";
@@ -12,7 +12,7 @@ import { useHydrated, useRoster } from "@/hooks/use-sprout-store";
 import { isPhotoExpired } from "@/lib/photo-cycle";
 import { BLUE_FIGHTER, plantOf } from "@/lib/sprites";
 import { addFighter, addNamedFighter, removeFighter, setActiveFighter, updatePhoto } from "@/lib/storage";
-import type { SpriteId } from "@/lib/types";
+import type { BuiltinSpriteId, SpriteId } from "@/lib/types";
 
 const pageClass =
   "px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))]";
@@ -21,7 +21,14 @@ const cardButtonClass =
   "h-11 w-full rounded-xl font-display text-lg leading-none";
 
 type CameraTarget = SpriteId | "new";
-type Digitizing = { photo: string; name: string };
+type Digitizing = {
+  photo: string;
+  name: string;
+  spriteId: SpriteId;
+  sheet: BuiltinSpriteId;
+  hue: number;
+  previousHp: number | null;
+};
 
 const PROCESS_STEPS = [
   { delay: 450, progress: 8, line: "Conectando con el laboratorio" },
@@ -44,7 +51,8 @@ export function FighterScreen() {
 
   function finishDigitizing(stats: PlantStats) {
     if (!digitizing) return;
-    addNamedFighter(digitizing.photo, digitizing.name, stats);
+    if (digitizing.previousHp == null) addNamedFighter(digitizing.photo, digitizing.name, stats);
+    else updatePhoto(digitizing.spriteId, digitizing.photo, stats);
     setDigitizing(null);
   }
 
@@ -56,16 +64,34 @@ export function FighterScreen() {
       setPendingPhoto(photo);
       return;
     }
-    const owned = roster.fighters.some((fighter) => fighter.spriteId === cameraFor);
-    if (owned) updatePhoto(cameraFor, photo);
-    else addFighter(cameraFor, photo);
+    const owned = roster.fighters.find((fighter) => fighter.spriteId === cameraFor);
     setCameraFor(null);
+    if (!owned) {
+      addFighter(cameraFor, photo);
+      return;
+    }
+    const plant = plantOf(owned);
+    setDigitizing({
+      photo,
+      name: plant.name,
+      spriteId: owned.spriteId,
+      sheet: plant.sheet,
+      hue: plant.hue,
+      previousHp: plant.hp,
+    });
   }
 
   function startDigitizing() {
     const trimmed = name.trim();
     if (!pendingPhoto || !trimmed) return;
-    setDigitizing({ photo: pendingPhoto, name: trimmed.slice(0, 24) });
+    setDigitizing({
+      photo: pendingPhoto,
+      name: trimmed.slice(0, 24),
+      spriteId: "original",
+      sheet: "original",
+      hue: BLUE_FIGHTER.tint,
+      previousHp: null,
+    });
     setPendingPhoto(null);
     setName("");
   }
@@ -184,6 +210,10 @@ export function FighterScreen() {
           <DigitizingScreen
             photo={digitizing.photo}
             name={digitizing.name}
+            spriteId={digitizing.spriteId}
+            sheet={digitizing.sheet}
+            hue={digitizing.hue}
+            previousHp={digitizing.previousHp}
             onDone={finishDigitizing}
           />
         </ScreenCover>
@@ -262,10 +292,18 @@ function ScreenCover({ children }: { children: ReactNode }) {
 function DigitizingScreen({
   photo,
   name,
+  spriteId,
+  sheet,
+  hue,
+  previousHp,
   onDone,
 }: {
   photo: string;
   name: string;
+  spriteId: SpriteId;
+  sheet: BuiltinSpriteId;
+  hue: number;
+  previousHp: number | null;
   onDone: (stats: PlantStats) => void;
 }) {
   const [progress, setProgress] = useState(0);
@@ -306,26 +344,15 @@ function DigitizingScreen({
         </h2>
         <p className="mt-2 text-sm text-white/70">{name}</p>
         {ready && stats ? (
-          <div className="mt-6 flex min-h-0 flex-1 flex-col">
-            <div className="grid place-items-center">
-              <PlantSprite
-                spriteId="original"
-                anim="idle"
-                label={name}
-                hue={BLUE_FIGHTER.tint}
-                sheet="original"
-              />
-            </div>
-            <p className="text-center text-sm text-white/70">Salió de la foto.</p>
-            <div className="mt-5 grid gap-4">
-              <StatRow label="Vida" value={stats.hp} max={138} />
-              <StatRow label="Ataque" value={stats.attack} max={34} />
-              <StatRow label="Defensa" value={stats.defense} max={28} />
-            </div>
-            <div className="mt-auto pt-6">
-              <PrimaryButton onClick={() => onDone(stats)}>Sumar al vestuario</PrimaryButton>
-            </div>
-          </div>
+          <AnalysisResult
+            name={name}
+            spriteId={spriteId}
+            sheet={sheet}
+            hue={hue}
+            stats={previousHp == null ? stats : withMoreLife(previousHp, stats)}
+            previousHp={previousHp}
+            onDone={onDone}
+          />
         ) : (
           <div className="mt-6 flex min-h-0 flex-1 flex-col">
             <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-white/60">
@@ -360,14 +387,74 @@ function DigitizingScreen({
   );
 }
 
-function StatRow({ label, value, max }: { label: string; value: number; max: number }) {
+function AnalysisResult({
+  name,
+  spriteId,
+  sheet,
+  hue,
+  stats,
+  previousHp,
+  onDone,
+}: {
+  name: string;
+  spriteId: SpriteId;
+  sheet: BuiltinSpriteId;
+  hue: number;
+  stats: PlantStats;
+  previousHp: number | null;
+  onDone: (stats: PlantStats) => void;
+}) {
+  const lifeGain = previousHp == null ? 0 : stats.hp - previousHp;
+  return (
+    <div className="mt-6 flex min-h-0 flex-1 flex-col">
+      <div className="grid place-items-center">
+        <PlantSprite spriteId={spriteId} anim="idle" label={name} hue={hue} sheet={sheet} />
+      </div>
+      <p className="text-center text-sm text-white/70">
+        {previousHp == null ? "Salió de la foto." : "La foto le sumó vida."}
+      </p>
+      <div className="mt-5 grid gap-4">
+        <StatRow
+          label="Vida"
+          value={stats.hp}
+          max={previousHp == null ? 138 : 160}
+          gain={lifeGain > 0 ? lifeGain : undefined}
+        />
+        <StatRow label="Ataque" value={stats.attack} max={34} />
+        <StatRow label="Defensa" value={stats.defense} max={28} />
+      </div>
+      <div className="mt-auto pt-6">
+        <PrimaryButton onClick={() => onDone(stats)}>
+          {previousHp == null ? "Sumar al vestuario" : "Guardar foto"}
+        </PrimaryButton>
+      </div>
+    </div>
+  );
+}
+
+function StatRow({
+  label,
+  value,
+  max,
+  gain,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  gain?: number;
+}) {
   return (
     <div>
       <div className="flex items-baseline justify-between">
         <span className="text-xs font-semibold uppercase tracking-[0.14em] text-white/55">
           {label}
         </span>
-        <span className="font-display text-4xl leading-none text-white">{value}</span>
+        <span className="flex items-baseline gap-2">
+          {gain ? (
+            <span className="font-display text-lg leading-none text-accent">+{gain}</span>
+          ) : null}
+          <span className="font-display text-4xl leading-none text-white">{value}</span>
+        </span>
       </div>
       <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
         <div

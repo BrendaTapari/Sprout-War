@@ -61,17 +61,24 @@ export function getSprite(id: SpriteId): SpritePlant {
 }
 
 export function plantOf(fighter: OwnedFighter): SpritePlant {
-  if (isBuiltinSpriteId(fighter.spriteId)) return getSprite(fighter.spriteId);
+  const base = isBuiltinSpriteId(fighter.spriteId)
+    ? getSprite(fighter.spriteId)
+    : {
+        id: fighter.spriteId,
+        name: fighter.name || "Carnívora Nueva",
+        epithet: fighter.epithet || "Hoja nueva",
+        bio: "Salió de una foto.",
+        hp: 100,
+        attack: 22,
+        defense: 14,
+        sheet: "original" as const,
+        hue: fighter.tint ?? 0,
+      };
   return {
-    id: fighter.spriteId,
-    name: fighter.name || "Carnívora Nueva",
-    epithet: fighter.epithet || "Hoja nueva",
-    bio: "Salió de una foto.",
-    hp: fighter.hp ?? 100,
-    attack: fighter.attack ?? 22,
-    defense: fighter.defense ?? 14,
-    sheet: "original",
-    hue: fighter.tint ?? 0,
+    ...base,
+    hp: fighter.hp ?? base.hp,
+    attack: fighter.attack ?? base.attack,
+    defense: fighter.defense ?? base.defense,
   };
 }
 

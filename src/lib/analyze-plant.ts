@@ -48,6 +48,15 @@ function statsFromImage(image: HTMLImageElement): PlantStats {
   return { hp, attack, defense };
 }
 
+export function withMoreLife(currentHp: number, analyzed: PlantStats): PlantStats {
+  const bonus = 4 + Math.round((analyzed.hp - 96) / 6);
+  return {
+    hp: clamp(currentHp + bonus, currentHp + 4, 160),
+    attack: analyzed.attack,
+    defense: analyzed.defense,
+  };
+}
+
 function average(values: number[]) {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }

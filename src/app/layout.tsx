@@ -17,14 +17,48 @@ const lilita = Lilita_One({
   display: "swap",
 });
 
+const SHARE_TITLE = "Sprout Wars";
+const SHARE_DESCRIPTION =
+  "Juego para el celular: sacale una foto a una planta real, digitalizala como luchadora y peleá en el ring.";
+
+function siteUrl() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  const host =
+    (process.env.VERCEL_ENV === "production"
+      ? process.env.VERCEL_PROJECT_PRODUCTION_URL
+      : undefined) ?? process.env.VERCEL_URL;
+  return host ? `https://${host}` : "http://localhost:3000";
+}
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: {
     default: "Sprout Wars",
     template: "%s · Sprout Wars",
   },
-  description:
-    "Escaneá una planta, convertila en luchador y peleá en el ring.",
+  description: SHARE_DESCRIPTION,
   applicationName: "Sprout Wars",
+  openGraph: {
+    title: SHARE_TITLE,
+    description: SHARE_DESCRIPTION,
+    type: "website",
+    locale: "es_AR",
+    siteName: "Sprout Wars",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Sprout Wars, un juego para sacarle fotos a plantas reales y digitalizarlas",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SHARE_TITLE,
+    description: SHARE_DESCRIPTION,
+    images: ["/og.png"],
+  },
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",

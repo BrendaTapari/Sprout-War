@@ -153,10 +153,19 @@ export function addFighter(spriteId: SpriteId, photo: string) {
   });
 }
 
-export function updatePhoto(spriteId: SpriteId, photo: string) {
+export function updatePhoto(spriteId: SpriteId, photo: string, stats?: PlantStats) {
   const current = loadRoster();
   const fighters = current.fighters.map((fighter) =>
-    fighter.spriteId === spriteId ? { ...fighter, photo, photoAt: Date.now() } : fighter,
+    fighter.spriteId === spriteId
+      ? {
+          ...fighter,
+          photo,
+          photoAt: Date.now(),
+          ...(stats
+            ? { hp: stats.hp, attack: stats.attack, defense: stats.defense }
+            : {}),
+        }
+      : fighter,
   );
   writeRoster({ ...current, fighters });
 }
