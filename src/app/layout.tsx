@@ -1,19 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Lilita_One, Nunito } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
-const inter = Inter({
+const nunito = Nunito({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-nunito",
   display: "swap",
 });
 
-const playfair = Playfair_Display({
+const lilita = Lilita_One({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  style: ["normal", "italic"],
-  variable: "--font-playfair",
+  weight: "400",
+  variable: "--font-lilita",
   display: "swap",
 });
 
@@ -47,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+      className={`${nunito.variable} ${lilita.variable} h-full antialiased`}
     >
       <body className="min-h-full font-sans text-foreground antialiased">
         <AppShell>{children}</AppShell>

@@ -112,8 +112,19 @@ export function ensureRosterDefaults() {
   const fighters = current.fighters.filter((fighter) => fighter.spriteId !== ENEMY_ID);
   const removedEnemy = fighters.length !== current.fighters.length;
   let changed = removedEnemy;
+  const now = Date.now();
+  const expiredAt = now - PHOTO_CYCLE_MS - 24 * 60 * 60 * 1000;
+  const hasOriginal = fighters.some((fighter) => fighter.spriteId === "original");
+  if (!hasOriginal) {
+    fighters.unshift({
+      spriteId: "original",
+      photo: "/sprites/original-idle.png",
+      addedAt: now,
+      photoAt: now,
+    });
+    changed = true;
+  }
   const hasWhite = fighters.some((fighter) => fighter.spriteId === "white");
-  const expiredAt = Date.now() - PHOTO_CYCLE_MS - 24 * 60 * 60 * 1000;
   if (!hasWhite) {
     fighters.push({
       spriteId: "white",

@@ -7,6 +7,7 @@ import { ActionDock } from "@/components/action-dock";
 import { LiveBattle } from "@/components/battle-screen";
 import { PlantSprite } from "@/components/plant-sprite";
 import { PhotoCountdown, usePhotoClock } from "@/components/photo-countdown";
+import { AppLogo } from "@/components/app-logo";
 import { PrimaryButton, primaryButtonClass } from "@/components/primary-button";
 import { useBattleSession, useHydrated, useRoster } from "@/hooks/use-sprout-store";
 import { isPhotoExpired } from "@/lib/photo-cycle";
@@ -73,11 +74,14 @@ function RingLobby() {
   return (
     <main className="flex h-full min-h-full flex-col px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-[calc(8.75rem+env(safe-area-inset-bottom))]">
       <header className="flex shrink-0 items-end justify-between gap-3 pb-2">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
-            Sprout Wars
-          </p>
-          <h1 className="font-display text-4xl leading-none">Ring</h1>
+        <div className="flex items-center gap-3">
+          <AppLogo className="size-16" priority />
+          <div>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-accent">
+              Sprout Wars
+            </p>
+            <h1 className="font-display text-4xl leading-none">Ring</h1>
+          </div>
         </div>
         <p className="text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted">
           {seeking ? "Buscando..." : "En espera"}
@@ -111,7 +115,7 @@ function RingLobby() {
           </div>
           <div className="relative mt-4 flex min-h-64 flex-1 items-end justify-center overflow-hidden rounded-[1.75rem] border border-line bg-[radial-gradient(90%_80%_at_50%_100%,oklch(0.32_0.06_145/0.55),transparent_62%),oklch(0.18_0.03_155)] px-2 pb-3">
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/45 to-transparent" />
-            <div className="pointer-events-none absolute inset-x-6 bottom-3 h-6 rounded-full bg-[oklch(0.24_0.04_145)]" />
+            <div className="pointer-events-none absolute inset-x-6 bottom-3 h-6 rounded-full bg-[oklch(0.32_0.06_120)]" />
             <div className="ring-actor relative z-10" data-side="left" data-anim="idle">
               <div className="ring-bob">
                 <PlantSprite spriteId={activeSprite.id} anim="idle" label={activeSprite.name} />

@@ -5,7 +5,8 @@ import { ActionDock } from "@/components/action-dock";
 import { DamageFloater } from "@/components/damage-floater";
 import { HpBar } from "@/components/hp-bar";
 import { PlantSprite } from "@/components/plant-sprite";
-import { PrimaryButton } from "@/components/primary-button";
+import { AppLogo } from "@/components/app-logo";
+import { PrimaryButton, ghostButtonClass } from "@/components/primary-button";
 import { ResultModal } from "@/components/result-modal";
 import { rollDamage } from "@/lib/damage";
 import { clearBattle } from "@/lib/storage";
@@ -198,10 +199,15 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
       >
         <header className="flex shrink-0 items-end justify-between gap-3 pb-2">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
-              Ring
-            </p>
-            <h1 className="font-display text-4xl leading-none">Pelea</h1>
+            <div className="flex items-center gap-3">
+              <AppLogo className="size-12" />
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-accent">
+                  Ring
+                </p>
+                <h1 className="font-display text-4xl leading-none">Pelea</h1>
+              </div>
+            </div>
           </div>
           <p className="text-right text-xs font-semibold uppercase tracking-[0.14em] text-muted">
             {turnLabel}
@@ -213,7 +219,7 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
         </div>
         <div className="relative mt-4 flex min-h-64 flex-1 items-end justify-center overflow-hidden rounded-[1.75rem] border border-line bg-[radial-gradient(90%_80%_at_50%_100%,oklch(0.32_0.06_145/0.55),transparent_62%),oklch(0.18_0.03_155)] px-2 pb-3">
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/45 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-6 bottom-3 h-6 rounded-full bg-[oklch(0.24_0.04_145)]" />
+          <div className="pointer-events-none absolute inset-x-6 bottom-3 h-6 rounded-full bg-[oklch(0.32_0.06_120)]" />
           <RingFighter
             side="left"
             plant={player}
@@ -241,7 +247,7 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
               type="button"
               onClick={onBlock}
               disabled={turn !== "player"}
-              className="inline-flex h-14 w-full touch-manipulation items-center justify-center rounded-2xl border border-line bg-card text-base font-semibold text-foreground transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
+              className={ghostButtonClass}
             >
               BLOQUEAR
             </button>

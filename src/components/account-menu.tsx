@@ -33,8 +33,8 @@ export function AccountNavLink() {
     <Link
       href="/cuenta"
       aria-current={active ? "page" : undefined}
-      className={`flex h-full flex-col items-center justify-center gap-1 text-[11px] font-medium tracking-wide ${
-        active ? "text-accent" : "text-muted"
+      className={`mx-1 flex h-[3.4rem] flex-col items-center justify-center gap-0.5 rounded-2xl text-[11px] font-extrabold tracking-wide ${
+        active ? "bg-accent/20 text-accent" : "text-muted"
       }`}
     >
       <span className="size-5 overflow-hidden rounded-full bg-white/10">

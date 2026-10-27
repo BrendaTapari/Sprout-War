@@ -18,8 +18,8 @@ export function BottomNav() {
       aria-label="Principal"
       className="fixed inset-x-0 bottom-0 z-20 flex justify-center"
     >
-      <div className="w-full max-w-[430px] border-t border-line bg-[oklch(0.16_0.028_155/0.94)] pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
-        <ul className="grid h-16 grid-cols-4">
+      <div className="w-full max-w-[430px] rounded-t-[1.6rem] border border-b-0 border-line bg-[oklch(0.2_0.045_150/0.96)] pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_oklch(0.1_0.02_150/0.45)]">
+        <ul className="grid h-[4.4rem] grid-cols-4">
           {ITEMS.map((item) => {
             const active =
               item.href === "/"
@@ -31,8 +31,8 @@ export function BottomNav() {
                 <Link
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className={`flex h-full flex-col items-center justify-center gap-1 text-[11px] font-medium tracking-wide ${
-                    active ? "text-accent" : "text-muted"
+                  className={`mx-1 flex h-[3.4rem] flex-col items-center justify-center gap-0.5 rounded-2xl text-[11px] font-extrabold tracking-wide ${
+                    active ? "bg-accent/20 text-accent" : "text-muted"
                   }`}
                 >
                   <NavIcon href={item.href} />
@@ -64,9 +64,13 @@ function NavIcon({ href }: { href: string }) {
 
   if (href === "/") {
     return (
-      <svg {...props}>
-        <path d="M12 3 21 12 12 21 3 12Z" />
-        <path d="M8.5 12h7" />
+      <svg {...props} strokeWidth={2}>
+        <path d="M18.518 17.347A7 7 0 0 1 14 19" />
+        <path d="M18.8 4A11 11 0 0 1 20 9" />
+        <path d="M9 9h.01" />
+        <circle cx="20" cy="16" r="2" />
+        <circle cx="9" cy="9" r="7" />
+        <rect x="4" y="16" width="10" height="6" rx="2" />
       </svg>
     );
   }

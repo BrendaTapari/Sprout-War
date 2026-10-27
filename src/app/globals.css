@@ -32,8 +32,16 @@
   --color-atk: var(--atk);
   --color-def: var(--def);
   --color-canvas: var(--canvas);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-sans: var(--font-nunito), "Trebuchet MS", sans-serif;
+  --font-display: var(--font-lilita), "Trebuchet MS", sans-serif;
+}
+
+.font-sans {
+  font-family: var(--font-nunito), "Trebuchet MS", sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-lilita), "Trebuchet MS", sans-serif;
 }
 
 html {
@@ -47,7 +55,7 @@ body {
   overflow-x: hidden;
   background: var(--canvas);
   color: var(--foreground);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-nunito), "Trebuchet MS", sans-serif;
 }
 
 ::selection {

@@ -57,7 +57,10 @@ export function FighterScreen() {
                   {owned ? (
                     <>
                       <div className="flex gap-2">
-                        <PlantSprite spriteId={sprite.id} anim="idle" label={sprite.name} />
+                        <div className="relative shrink-0">
+                          <PlantSprite spriteId={sprite.id} anim="idle" label={sprite.name} />
+                          <div className="pointer-events-none absolute inset-x-5 bottom-3 h-3 rounded-full bg-[oklch(0.34_0.06_90)]" />
+                        </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
                             {active ? "En el ring" : sprite.epithet}

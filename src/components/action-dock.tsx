@@ -6,7 +6,7 @@ export function ActionDock({
   aboveNav?: boolean;
 }) {
   const position = aboveNav
-    ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom))]"
+    ? "bottom-[calc(5.15rem+env(safe-area-inset-bottom))]"
     : "bottom-[max(0.85rem,env(safe-area-inset-bottom))]";
 
   return (

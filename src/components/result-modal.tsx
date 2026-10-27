@@ -55,7 +55,7 @@ export function ResultModal({
         </p>
         <div className="mt-8">
           <PrimaryButton ref={closeRef} onClick={onExit}>
-            Volver al inicio
+            Volver al ring
           </PrimaryButton>
         </div>
       </motion.div>
