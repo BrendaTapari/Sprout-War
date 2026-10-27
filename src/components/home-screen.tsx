@@ -8,6 +8,7 @@ import { LiveBattle } from "@/components/battle-screen";
 import { PlantSprite } from "@/components/plant-sprite";
 import { PhotoCountdown, usePhotoClock } from "@/components/photo-countdown";
 import { AppLogo } from "@/components/app-logo";
+import { FightRing } from "@/components/fight-ring";
 import { PrimaryButton, primaryButtonClass } from "@/components/primary-button";
 import { useBattleSession, useHydrated, useRoster } from "@/hooks/use-sprout-store";
 import { isPhotoExpired } from "@/lib/photo-cycle";
@@ -115,9 +116,7 @@ function RingLobby() {
               </h2>
             </div>
           </div>
-          <div className="relative mt-4 flex min-h-64 flex-1 items-end justify-center overflow-hidden rounded-[1.75rem] border border-line bg-[radial-gradient(90%_80%_at_50%_100%,oklch(0.32_0.06_145/0.55),transparent_62%),oklch(0.18_0.03_155)] px-2 pb-3">
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/45 to-transparent" />
-            <div className="pointer-events-none absolute inset-x-6 bottom-3 h-6 rounded-full bg-[oklch(0.32_0.06_120)]" />
+          <FightRing>
             <div className="ring-actor relative z-10" data-side="left" data-anim="idle">
               <div className="ring-bob">
                 <PlantSprite
@@ -131,12 +130,12 @@ function RingLobby() {
             </div>
             <div className="relative z-10 grid size-32 place-items-center">
               <p
-                className={`font-display text-5xl ${seeking ? "animate-pulse text-accent" : "text-white/25"}`}
+                className={`font-display text-5xl ${seeking ? "animate-pulse text-accent" : "text-[oklch(0.28_0.04_155/0.45)]"}`}
               >
                 ?
               </p>
             </div>
-          </div>
+          </FightRing>
           {active ? <PhotoCountdown photoAt={active.photoAt} /> : null}
           {seeking ? (
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">

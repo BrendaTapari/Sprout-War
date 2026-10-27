@@ -23,10 +23,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-canvas">
-      <div className="relative mx-auto flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-[radial-gradient(circle_at_8%_6%,oklch(0.42_0.11_145/0.55),transparent_26%),radial-gradient(circle_at_96%_14%,oklch(0.4_0.1_130/0.4),transparent_24%),radial-gradient(circle_at_70%_100%,oklch(0.32_0.08_145/0.45),transparent_36%),var(--background)] md:border-x md:border-line">
+      <div
+        className={
+          fighting
+            ? "relative flex h-dvh w-full flex-col overflow-hidden bg-black"
+            : "relative mx-auto flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-[radial-gradient(circle_at_8%_6%,oklch(0.42_0.11_145/0.55),transparent_26%),radial-gradient(circle_at_96%_14%,oklch(0.4_0.1_130/0.4),transparent_24%),radial-gradient(circle_at_70%_100%,oklch(0.32_0.08_145/0.45),transparent_36%),var(--background)] md:border-x md:border-line"
+        }
+      >
         <div
           ref={scrollerRef}
-          className="relative z-10 min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain"
+          className={
+            fighting
+              ? "relative min-h-0 flex-1 overflow-hidden"
+              : "relative z-10 min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain"
+          }
         >
           {children}
         </div>

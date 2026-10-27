@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: oklch(0.17 0.03 155);
+  --background: oklch(0.21 0.034 155);
   --foreground: oklch(0.97 0.012 140);
   --card: oklch(0.23 0.028 155);
   --card-2: oklch(0.28 0.034 155);
@@ -14,7 +14,7 @@
   --hp: oklch(0.86 0.2 140);
   --atk: oklch(0.8 0.15 78);
   --def: oklch(0.78 0.06 220);
-  --canvas: oklch(0.12 0.018 155);
+  --canvas: oklch(0.15 0.022 155);
 }
 
 @theme inline {
@@ -252,5 +252,20 @@ button:not(:disabled) {
   }
   50% {
     transform: translateY(-5px);
+  }
+}
+
+.rotate-phone {
+  animation: rotate-phone 1.6s ease-in-out infinite;
+}
+
+@keyframes rotate-phone {
+  0%,
+  20% {
+    transform: rotate(0deg);
+  }
+  55%,
+  100% {
+    transform: rotate(90deg);
   }
 }
