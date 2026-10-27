@@ -1,26 +1,248 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: oklch(0.17 0.03 155);
+  --foreground: oklch(0.97 0.012 140);
+  --card: oklch(0.23 0.028 155);
+  --card-2: oklch(0.28 0.034 155);
+  --muted: oklch(0.74 0.028 150);
+  --line: oklch(0.36 0.03 155);
+  --accent: oklch(0.88 0.21 136);
+  --accent-ink: oklch(0.24 0.05 145);
+  --danger: oklch(0.68 0.21 25);
+  --warn: oklch(0.82 0.15 85);
+  --hp: oklch(0.86 0.2 140);
+  --atk: oklch(0.8 0.15 78);
+  --def: oklch(0.78 0.06 220);
+  --canvas: oklch(0.12 0.018 155);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-danger: var(--danger);
+  --color-warn: var(--warn);
+  --color-hp: var(--hp);
+  --color-atk: var(--atk);
+  --color-def: var(--def);
+  --color-canvas: var(--canvas);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-playfair), ui-serif, Georgia, serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  height: 100%;
+  overflow-x: hidden;
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
+  min-height: 100%;
+  overflow-x: hidden;
+  background: var(--canvas);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: oklch(0.88 0.21 136 / 0.35);
+  color: oklch(0.2 0.04 150);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+.drain {
+  transform-origin: left;
+  animation: drain 2s linear forwards;
+}
+
+@keyframes drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drain {
+    animation: none;
+    transform: scaleX(0.45);
+  }
+}
+
+/* Cada fotograma mide 128px. La imagen de fondo la pone el componente, según la planta. */
+.plant-sprite {
+  width: 128px;
+  height: 128px;
+  flex-shrink: 0;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.plant-sprite--idle {
+  background-size: 512px 128px;
+  animation: sprite-idle 0.8s steps(4) infinite;
+}
+
+.plant-sprite--attack {
+  background-size: 640px 128px;
+  animation: sprite-attack 0.5s steps(4) forwards;
+}
+
+.plant-sprite--hurt {
+  background-size: 384px 128px;
+  animation: sprite-hurt 0.36s steps(2) forwards;
+}
+
+.plant-sprite--block {
+  background-size: 640px 128px;
+  animation: sprite-block 0.48s steps(4) forwards;
+}
+
+.plant-sprite--death {
+  background-size: 768px 128px;
+  animation: sprite-death 0.7s steps(5) forwards;
+}
+
+@keyframes sprite-idle {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -512px 0;
+  }
+}
+
+@keyframes sprite-attack {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -512px 0;
+  }
+}
+
+@keyframes sprite-hurt {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -256px 0;
+  }
+}
+
+@keyframes sprite-block {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -512px 0;
+  }
+}
+
+@keyframes sprite-death {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -640px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plant-sprite--idle,
+  .plant-sprite--attack,
+  .plant-sprite--hurt,
+  .plant-sprite--block,
+  .plant-sprite--death {
+    animation: none;
+    background-position: 0 0;
+  }
+
+  .ring-actor,
+  .ring-bob {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* El sprite mira a la derecha. El de la derecha se espeja para quedar frente a frente. */
+.ring-actor {
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.ring-actor[data-side="left"][data-anim="attack"] {
+  transform: translateX(58px);
+}
+
+.ring-actor[data-side="left"][data-anim="hurt"] {
+  transform: translateX(-16px);
+}
+
+.ring-actor[data-side="left"][data-anim="block"] {
+  transform: translateX(-12px);
+}
+
+.ring-actor[data-side="left"][data-anim="death"] {
+  transform: translateY(22px);
+}
+
+.ring-actor[data-side="right"][data-anim="attack"] {
+  transform: translateX(-58px);
+}
+
+.ring-actor[data-side="right"][data-anim="hurt"] {
+  transform: translateX(16px);
+}
+
+.ring-actor[data-side="right"][data-anim="block"] {
+  transform: translateX(12px);
+}
+
+.ring-actor[data-side="right"][data-anim="death"] {
+  transform: translateY(22px);
+}
+
+.ring-face {
+  transform: scaleX(-1);
+}
+
+.ring-actor[data-anim="idle"] .ring-bob {
+  animation: ring-bob 1.8s ease-in-out infinite;
+}
+
+.ring-actor[data-side="right"][data-anim="idle"] .ring-bob {
+  animation-delay: -0.9s;
+}
+
+@keyframes ring-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
