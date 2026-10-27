@@ -46,10 +46,10 @@ export const metadata: Metadata = {
     siteName: "Sprout Wars",
     images: [
       {
-        url: "/og.png",
-        width: 1200,
-        height: 630,
-        alt: "Sprout Wars, un juego para sacarle fotos a plantas reales y digitalizarlas",
+        url: "/logo.png",
+        width: 1024,
+        height: 1024,
+        alt: "Sprout Wars",
       },
     ],
   },
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SHARE_TITLE,
     description: SHARE_DESCRIPTION,
-    images: ["/og.png"],
+    images: ["/logo.png"],
   },
   icons: {
     icon: "/logo.png",
