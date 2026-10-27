@@ -11,7 +11,7 @@ import { AppLogo } from "@/components/app-logo";
 import { PrimaryButton, primaryButtonClass } from "@/components/primary-button";
 import { useBattleSession, useHydrated, useRoster } from "@/hooks/use-sprout-store";
 import { isPhotoExpired } from "@/lib/photo-cycle";
-import { ENEMY_ID, getSprite } from "@/lib/sprites";
+import { ENEMY_ID, getSprite, plantOf } from "@/lib/sprites";
 import { saveBattle } from "@/lib/storage";
 
 const SEEK_MS = 3000;
@@ -19,6 +19,7 @@ const SEEK_MS = 3000;
 export function HomeScreen() {
   const hydrated = useHydrated();
   const session = useBattleSession();
+  const roster = useRoster();
 
   if (!hydrated) {
     return (
@@ -30,10 +31,11 @@ export function HomeScreen() {
   }
 
   if (session) {
+    const owned = roster.fighters.find((fighter) => fighter.spriteId === session.playerId);
     return (
       <LiveBattle
         key={session.id}
-        player={getSprite(session.playerId)}
+        player={owned ? plantOf(owned) : getSprite(session.playerId)}
         enemy={getSprite(session.enemyId)}
       />
     );
@@ -49,7 +51,7 @@ function RingLobby() {
   const [seeking, setSeeking] = useState(false);
 
   const active = roster.fighters.find((fighter) => fighter.spriteId === roster.activeId);
-  const activeSprite = active ? getSprite(active.spriteId) : null;
+  const activeSprite = active ? plantOf(active) : null;
   const photoDue = Boolean(active && now > 0 && isPhotoExpired(active.photoAt, now));
 
   useEffect(() => {
@@ -118,7 +120,13 @@ function RingLobby() {
             <div className="pointer-events-none absolute inset-x-6 bottom-3 h-6 rounded-full bg-[oklch(0.32_0.06_120)]" />
             <div className="ring-actor relative z-10" data-side="left" data-anim="idle">
               <div className="ring-bob">
-                <PlantSprite spriteId={activeSprite.id} anim="idle" label={activeSprite.name} />
+                <PlantSprite
+                  spriteId={activeSprite.id}
+                  anim="idle"
+                  label={activeSprite.name}
+                  hue={activeSprite.hue}
+                  sheet={activeSprite.sheet}
+                />
               </div>
             </div>
             <div className="relative z-10 grid size-32 place-items-center">

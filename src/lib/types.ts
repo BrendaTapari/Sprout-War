@@ -1,4 +1,6 @@
-export type SpriteId = "original" | "red" | "white";
+export type BuiltinSpriteId = "original" | "red" | "white";
+
+export type SpriteId = BuiltinSpriteId | `sprout-${string}`;
 
 export type SpriteAnim = "idle" | "attack" | "hurt" | "block" | "death";
 
@@ -10,6 +12,8 @@ export type SpritePlant = {
   hp: number;
   attack: number;
   defense: number;
+  sheet: BuiltinSpriteId;
+  hue: number;
 };
 
 export type OwnedFighter = {
@@ -17,6 +21,12 @@ export type OwnedFighter = {
   photo: string;
   addedAt: number;
   photoAt: number;
+  tint?: number;
+  name?: string;
+  epithet?: string;
+  hp?: number;
+  attack?: number;
+  defense?: number;
 };
 
 export type Roster = {

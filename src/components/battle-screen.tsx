@@ -310,7 +310,13 @@ function RingFighter({
       ))}
       <div className="ring-bob">
         <div className={side === "right" ? "ring-face" : undefined}>
-          <PlantSprite spriteId={plant.id} anim={anim} label={plant.name} />
+          <PlantSprite
+            spriteId={plant.id}
+            anim={anim}
+            label={plant.name}
+            hue={plant.hue}
+            sheet={plant.sheet}
+          />
         </div>
       </div>
     </div>

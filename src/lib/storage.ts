@@ -1,5 +1,6 @@
-import { PHOTO_CYCLE_MS } from "@/lib/photo-cycle";
-import { ENEMY_ID, isSpriteId } from "@/lib/sprites";
+import { isPhotoExpired, PHOTO_CYCLE_MS } from "@/lib/photo-cycle";
+import type { PlantStats } from "@/lib/analyze-plant";
+import { BLUE_FIGHTER, ENEMY_ID, isSpriteId } from "@/lib/sprites";
 import type { Account, BattleSession, OwnedFighter, Roster, SpriteId } from "@/lib/types";
 
 const ROSTER_KEY = "sprout-wars:roster";
@@ -49,11 +50,21 @@ function parseRoster(raw: string | null): Roster {
       if (fighters.some((owned) => owned.spriteId === fighter.spriteId)) continue;
       const addedAt = typeof fighter.addedAt === "number" ? fighter.addedAt : Date.now();
       const stamped = fighter as OwnedFighter & { photoAt?: unknown };
+      const tint = finite(fighter.tint, 0, 360);
+      const hp = finite(fighter.hp, 80, 160);
+      const attack = finite(fighter.attack, 10, 40);
+      const defense = finite(fighter.defense, 4, 40);
       fighters.push({
         spriteId: fighter.spriteId,
         photo: fighter.photo,
         addedAt,
         photoAt: typeof stamped.photoAt === "number" ? stamped.photoAt : addedAt,
+        ...(typeof fighter.name === "string" ? { name: fighter.name.slice(0, 40) } : {}),
+        ...(typeof fighter.epithet === "string" ? { epithet: fighter.epithet.slice(0, 40) } : {}),
+        ...(tint === undefined ? {} : { tint }),
+        ...(hp === undefined ? {} : { hp }),
+        ...(attack === undefined ? {} : { attack }),
+        ...(defense === undefined ? {} : { defense }),
       });
     }
     const activeId =
@@ -84,6 +95,49 @@ function writeRoster(roster: Roster) {
   emit();
 }
 
+function finite(value: unknown, min: number, max: number) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  return Math.min(max, Math.max(min, value));
+}
+
+export function addNamedFighter(photo: string, name: string, stats: PlantStats) {
+  const current = loadRoster();
+  const now = Date.now();
+  const spriteId = `sprout-${now.toString(36)}` as SpriteId;
+  const trimmed = name.trim().slice(0, 24);
+  if (!trimmed) return;
+  writeRoster({
+    fighters: [
+      ...current.fighters,
+      {
+        spriteId,
+        photo,
+        addedAt: now,
+        photoAt: now,
+        tint: BLUE_FIGHTER.tint,
+        name: trimmed,
+        epithet: BLUE_FIGHTER.epithet,
+        hp: stats.hp,
+        attack: stats.attack,
+        defense: stats.defense,
+      },
+    ],
+    activeId: current.activeId ?? spriteId,
+  });
+}
+
+export function removeFighter(spriteId: SpriteId) {
+  const current = loadRoster();
+  const fighters = current.fighters.filter((fighter) => fighter.spriteId !== spriteId);
+  const now = Date.now();
+  const keptActive = fighters.some((fighter) => fighter.spriteId === current.activeId);
+  const ready = fighters.find((fighter) => !isPhotoExpired(fighter.photoAt, now));
+  writeRoster({
+    fighters,
+    activeId: keptActive ? current.activeId : (ready?.spriteId ?? fighters[0]?.spriteId ?? null),
+  });
+}
+
 export function addFighter(spriteId: SpriteId, photo: string) {
   if (spriteId === ENEMY_ID) return;
   const current = loadRoster();
@@ -107,47 +161,50 @@ export function updatePhoto(spriteId: SpriteId, photo: string) {
   writeRoster({ ...current, fighters });
 }
 
+function seedRoster() {
+  const now = Date.now();
+  const expiredAt = now - PHOTO_CYCLE_MS - 24 * 60 * 60 * 1000;
+  writeRoster({
+    activeId: "original",
+    fighters: [
+      {
+        spriteId: "original",
+        photo: "/sprites/original-idle.png",
+        addedAt: now,
+        photoAt: now,
+      },
+      {
+        spriteId: "white",
+        photo: "/sprites/white-idle.png",
+        addedAt: expiredAt,
+        photoAt: expiredAt,
+      },
+    ],
+  });
+}
+
 export function ensureRosterDefaults() {
+  if (localStorage.getItem(ROSTER_KEY) === null) {
+    seedRoster();
+    return;
+  }
   const current = loadRoster();
   const fighters = current.fighters.filter((fighter) => fighter.spriteId !== ENEMY_ID);
   const removedEnemy = fighters.length !== current.fighters.length;
   let changed = removedEnemy;
   const now = Date.now();
-  const expiredAt = now - PHOTO_CYCLE_MS - 24 * 60 * 60 * 1000;
-  const hasOriginal = fighters.some((fighter) => fighter.spriteId === "original");
-  if (!hasOriginal) {
-    fighters.unshift({
-      spriteId: "original",
-      photo: "/sprites/original-idle.png",
-      addedAt: now,
-      photoAt: now,
-    });
-    changed = true;
-  }
-  const hasWhite = fighters.some((fighter) => fighter.spriteId === "white");
-  if (!hasWhite) {
-    fighters.push({
-      spriteId: "white",
-      photo: "/sprites/white-idle.png",
-      addedAt: expiredAt,
-      photoAt: expiredAt,
-    });
-    changed = true;
-  }
   for (const fighter of fighters) {
     if (fighter.spriteId === "original" && fighter.photoAt < fighter.addedAt) {
       fighter.photoAt = fighter.addedAt;
       changed = true;
     }
   }
+  const currentActive = fighters.find((fighter) => fighter.spriteId === current.activeId);
+  const ready = fighters.find((fighter) => !isPhotoExpired(fighter.photoAt, now));
   const activeId =
-    current.activeId &&
-    current.activeId !== ENEMY_ID &&
-    fighters.some((fighter) => fighter.spriteId === current.activeId)
-      ? current.activeId
-      : (fighters.find((fighter) => fighter.spriteId === "original")?.spriteId ??
-        fighters[0]?.spriteId ??
-        null);
+    currentActive && !isPhotoExpired(currentActive.photoAt, now)
+      ? currentActive.spriteId
+      : (ready?.spriteId ?? currentActive?.spriteId ?? fighters[0]?.spriteId ?? null);
   if (!changed && activeId === current.activeId) return;
   writeRoster({ fighters, activeId });
 }
