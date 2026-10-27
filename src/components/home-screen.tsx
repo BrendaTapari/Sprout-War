@@ -94,7 +94,7 @@ function RingLobby() {
         <section className="mt-8 rounded-[1.75rem] border border-line bg-card px-5 py-8 text-center">
           <p className="font-display text-3xl">El ring está vacío</p>
           <p className="mt-3 text-sm leading-relaxed text-muted">
-            Sumá una carnívora desde Luchador. Con esa planta se busca pelea.
+            Sumá una carnívora desde Vestidor. Con esa planta se busca pelea.
           </p>
         </section>
       ) : (

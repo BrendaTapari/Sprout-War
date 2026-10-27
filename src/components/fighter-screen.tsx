@@ -85,10 +85,18 @@ export function FighterScreen() {
               return (
                 <li
                   key={owned.spriteId}
-                  className={`rounded-[1.5rem] border bg-card p-3 ${
+                  className={`relative rounded-[1.5rem] border bg-card p-3 ${
                     active ? "border-accent/60" : "border-line"
                   }`}
                 >
+                  <button
+                    type="button"
+                    onClick={() => removeFighter(owned.spriteId)}
+                    aria-label={`Eliminar ${plant.name}`}
+                    className="absolute top-2.5 right-2.5 grid size-9 place-items-center rounded-full text-danger"
+                  >
+                    <TrashIcon />
+                  </button>
                   <div className="flex gap-2">
                     <div className="relative shrink-0">
                       <PlantSprite
@@ -100,7 +108,7 @@ export function FighterScreen() {
                       />
                       <div className="pointer-events-none absolute inset-x-5 bottom-3 h-3 rounded-full bg-[oklch(0.34_0.06_90)]" />
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 pr-8">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
                         {active ? "En el ring" : plant.epithet}
                       </p>
@@ -134,13 +142,6 @@ export function FighterScreen() {
                       }
                     >
                       {expired ? "Subir foto" : "Actualizar foto"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeFighter(owned.spriteId)}
-                      className="h-10 w-full rounded-xl text-sm font-semibold text-danger"
-                    >
-                      Eliminar
                     </button>
                   </div>
                 </li>
@@ -375,6 +376,27 @@ function StatRow({ label, value, max }: { label: string; value: number; max: num
         />
       </div>
     </div>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="size-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
   );
 }
 
