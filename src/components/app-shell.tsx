@@ -30,7 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           className={
             fighting
               ? "relative min-h-0 flex-1 overflow-hidden"
-              : "relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain"
+              : "app-scroll relative min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain"
           }
         >
           {children}
