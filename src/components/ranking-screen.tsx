@@ -3,7 +3,7 @@
 import { useRef, useState, type TouchEvent } from "react";
 import { ScreenHeader } from "@/components/screen-header";
 import { useHydrated, useRoster } from "@/hooks/use-sprout-store";
-import { RANKING, TEAM_RANKING } from "@/lib/ranking";
+import { PLAYER_LEAGUES, TEAM_RANKING, championOfLeagues } from "@/lib/ranking";
 import { plantOf } from "@/lib/sprites";
 
 type RankingTab = "players" | "teams";
@@ -14,6 +14,9 @@ export function RankingScreen() {
   const active = roster.fighters.find((fighter) => fighter.spriteId === roster.activeId);
   const activeName = active ? plantOf(active).name : null;
   const [tab, setTab] = useState<RankingTab>("players");
+  const [leagueName, setLeagueName] = useState(PLAYER_LEAGUES[0].name);
+  const league = PLAYER_LEAGUES.find((item) => item.name === leagueName) ?? PLAYER_LEAGUES[0];
+  const champion = championOfLeagues();
   const touchX = useRef<number | null>(null);
 
   function onTouchStart(event: TouchEvent) {
@@ -34,7 +37,7 @@ export function RankingScreen() {
       <ScreenHeader
         eyebrow="Temporada"
         title="Ranking"
-        subtitle="Tres nombres arriba del invernadero. Los premios los ponen marcas que no existen."
+        subtitle="Cada liga tiene su podio. Los premios los ponen marcas que no existen."
       />
       <div
         role="tablist"
@@ -67,19 +70,59 @@ export function RankingScreen() {
             tab === "teams" ? "-translate-x-1/2" : "translate-x-0"
           }`}
         >
-          <ol className="w-1/2 shrink-0 space-y-3">
-            {RANKING.map((row) => (
-              <RankCard
-                key={row.place}
-                place={row.place}
-                title={row.alias}
-                detail={`${row.fighter} · ${row.wins} victorias`}
-                sponsor={row.sponsor}
-                prize={row.prize}
-              />
-            ))}
-          </ol>
-          <ol className="w-1/2 shrink-0 space-y-3">
+          <div className={`w-1/2 shrink-0 ${tab === "teams" ? "h-0 overflow-hidden" : ""}`}>
+            {champion ? (
+              <section className="rounded-[1.5rem] border border-accent/50 bg-card p-4">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-accent">
+                  Ganador de todas las ligas
+                </p>
+                <h2 className="mt-2 font-display text-3xl leading-none">{champion.alias}</h2>
+                <p className="mt-1.5 text-sm text-muted">
+                  {champion.fighter} · {champion.league}
+                </p>
+                <p className="mt-3 font-display text-2xl leading-none text-accent">
+                  {champion.wins} puntos
+                </p>
+              </section>
+            ) : null}
+            <label className="mt-5 block">
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-accent">
+                Ligas
+              </span>
+              <span className="relative mt-2 block">
+                <select
+                  value={league.name}
+                  onChange={(event) => setLeagueName(event.target.value)}
+                  className="h-12 w-full appearance-none rounded-2xl border border-line bg-card px-4 pr-10 font-display text-xl text-foreground outline-none focus:border-accent"
+                >
+                  {PLAYER_LEAGUES.map((item) => (
+                    <option key={item.name} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm text-muted">
+                  ▾
+                </span>
+              </span>
+            </label>
+            <section className="mt-4" aria-label={league.name}>
+              <h2 className="font-display text-3xl leading-none">{league.name}</h2>
+              <ol className="mt-3 space-y-3">
+                {league.rows.map((row) => (
+                  <RankCard
+                    key={`${league.name}-${row.place}`}
+                    place={row.place}
+                    title={row.alias}
+                    detail={`${row.fighter} · ${row.wins} victorias`}
+                    sponsor={row.sponsor}
+                    prize={row.prize}
+                  />
+                ))}
+              </ol>
+            </section>
+          </div>
+          <ol className={`w-1/2 shrink-0 space-y-3 ${tab === "players" ? "h-0 overflow-hidden" : ""}`}>
             {TEAM_RANKING.map((row) => (
               <RankCard
                 key={row.place}

@@ -15,6 +15,10 @@ const HURT_MS = 280;
 const DEATH_MS = 720;
 const RANGE = 24;
 const POWER_MAX = 100;
+const POWER_HIT = 18;
+const POWER_HIT_TAKEN = 13;
+const POWER_BLOCK = 9;
+const POWER_BLOCK_TAKEN = 5;
 
 type Outcome = "victory" | "defeat";
 type Floater = { id: number; amount: number; side: "player" | "enemy"; blocked?: boolean };
@@ -26,7 +30,8 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
   const [enemyAnim, setEnemyAnim] = useState<SpriteAnim>("idle");
   const [playerX, setPlayerX] = useState(28);
   const [enemyX, setEnemyX] = useState(52);
-  const [power, setPower] = useState(0);
+  const [playerPower, setPlayerPower] = useState(0);
+  const [enemyPower, setEnemyPower] = useState(0);
   const [blocking, setBlocking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
@@ -42,7 +47,8 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
   const enemyHpRef = useRef(enemy.hp);
   const playerXRef = useRef(28);
   const enemyXRef = useRef(52);
-  const powerRef = useRef(0);
+  const playerPowerRef = useRef(0);
+  const enemyPowerRef = useRef(0);
   const timers = useRef<number[]>([]);
 
   useEffect(() => {
@@ -87,10 +93,29 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
     });
   }
 
-  function charge(amount: number) {
-    const next = Math.min(POWER_MAX, powerRef.current + amount);
-    powerRef.current = next;
-    setPower(next);
+  function charge(side: "player" | "enemy", amount: number) {
+    const ref = side === "player" ? playerPowerRef : enemyPowerRef;
+    const next = Math.min(POWER_MAX, ref.current + amount);
+    if (next === ref.current) return;
+    ref.current = next;
+    if (side === "player") setPlayerPower(next);
+    else setEnemyPower(next);
+  }
+
+  function clearPower(side: "player" | "enemy") {
+    if (side === "player") {
+      playerPowerRef.current = 0;
+      setPlayerPower(0);
+      return;
+    }
+    enemyPowerRef.current = 0;
+    setEnemyPower(0);
+  }
+
+  function reward(attacker: "player" | "enemy", landed: boolean) {
+    const defender = attacker === "player" ? "enemy" : "player";
+    charge(attacker, landed ? POWER_HIT : POWER_BLOCK);
+    charge(defender, landed ? POWER_HIT_TAKEN : POWER_BLOCK_TAKEN);
   }
 
   function applyHit(side: "player" | "enemy", amount: number, line: string) {
@@ -136,6 +161,14 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
       setEnemyAnim("idle");
       return;
     }
+    if (enemyPowerRef.current >= POWER_MAX) {
+      clearPower("enemy");
+      busyRef.current = true;
+      setBusy(true);
+      setLog(`¡Super de ${enemy.name}!`);
+      swing("enemy", 2);
+      return;
+    }
     setEnemyAnim("attack");
     later(ATTACK_MS, () => {
       if (endedRef.current) return;
@@ -144,16 +177,17 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
         splash("player", 0, true);
         setPlayerAnim("block");
         setLog("La piña no entra.");
+        reward("enemy", false);
         return;
       }
       setPlayerAnim("hurt");
       const amount = rollDamage(enemy.attack, player.defense);
       const killed = applyHit("player", amount, `${enemy.name} muerde · -${amount} HP`);
+      reward("enemy", true);
       if (killed) {
         finish("defeat", "player");
         return;
       }
-      charge(4);
       later(HURT_MS, () => {
         if (!endedRef.current && !blockingRef.current) setPlayerAnim("idle");
       });
@@ -163,14 +197,7 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
   useEffect(() => {
     if (landscape !== true) return;
     const step = window.setInterval(() => actRef.current.enemy(), 2200);
-    const meter = window.setInterval(() => {
-      if (endedRef.current || powerRef.current >= POWER_MAX) return;
-      charge(3);
-    }, 250);
-    return () => {
-      window.clearInterval(step);
-      window.clearInterval(meter);
-    };
+    return () => window.clearInterval(step);
   }, [landscape]);
 
   function moveBy(delta: number) {
@@ -198,6 +225,7 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
       if (blocked || amount <= 0) {
         splash("enemy", 0, true);
         setLog(`${enemy.name} se cubre.`);
+        reward("player", false);
         later(280, () => {
           if (endedRef.current) return;
           setEnemyAnim("idle");
@@ -207,7 +235,7 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
         return;
       }
       const killed = applyHit("enemy", amount, `${player.name} muerde · -${amount} HP`);
-      charge(18);
+      reward("player", true);
       if (killed) {
         finish("victory", "enemy");
         return;
@@ -223,49 +251,56 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
   }
 
   function onSuper() {
-    if (endedRef.current || busyRef.current || powerRef.current < POWER_MAX) return;
+    if (endedRef.current || busyRef.current || playerPowerRef.current < POWER_MAX) return;
     if (!inRange()) {
       moveBy(8);
       setLog("Acercate para el super.");
       return;
     }
-    powerRef.current = 0;
-    setPower(0);
+    clearPower("player");
     busyRef.current = true;
     setBusy(true);
     setLog("¡Super!");
-    swing(2);
+    swing("player", 2);
   }
 
-  function swing(left: number) {
-    setPlayerAnim("idle");
+  function swing(attacker: "player" | "enemy", left: number) {
+    const defender = attacker === "player" ? "enemy" : "player";
+    const setAttackerAnim = attacker === "player" ? setPlayerAnim : setEnemyAnim;
+    const setDefenderAnim = attacker === "player" ? setEnemyAnim : setPlayerAnim;
+    const attack = attacker === "player" ? player.attack : enemy.attack;
+    const defense = attacker === "player" ? enemy.defense : player.defense;
+    const result: Outcome = attacker === "player" ? "victory" : "defeat";
+    const name = attacker === "player" ? player.name : enemy.name;
+
+    setAttackerAnim("idle");
     later(70, () => {
       if (endedRef.current) return;
-      setPlayerAnim("attack");
-      const amount = rollDamage(player.attack, enemy.defense);
+      setAttackerAnim("attack");
+      const amount = rollDamage(attack, defense);
       later(ATTACK_MS, () => {
         if (endedRef.current) return;
-        setPlayerAnim("idle");
-        const killed = applyHit("enemy", amount, `Super · -${amount} HP`);
+        setAttackerAnim("idle");
+        const killed = applyHit(defender, amount, `Super de ${name} · -${amount} HP`);
         if (killed) {
-          finish("victory", "enemy");
+          finish(result, defender);
           return;
         }
-        setEnemyAnim("hurt");
+        setDefenderAnim("hurt");
         if (left > 1) {
           later(220, () => {
             if (endedRef.current) return;
-            setEnemyAnim("idle");
-            swing(left - 1);
+            setDefenderAnim("idle");
+            swing(attacker, left - 1);
           });
           return;
         }
         later(HURT_MS, () => {
           if (endedRef.current) return;
-          setEnemyAnim("idle");
+          setDefenderAnim("idle");
           busyRef.current = false;
           setBusy(false);
-          setLog("La barra quedó vacía.");
+          setLog(attacker === "player" ? "Tu poder quedó vacío." : `${name} gastó el poder.`);
         });
       });
     });
@@ -297,7 +332,7 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
     );
   }
 
-  const ready = power >= POWER_MAX;
+  const ready = playerPower >= POWER_MAX;
 
   return (
     <div className="relative h-full w-full overflow-hidden">
@@ -320,24 +355,12 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/70 to-transparent px-4 pt-[max(0.6rem,env(safe-area-inset-top))] pb-10">
         <div className="grid grid-cols-2 items-end gap-8">
-          <FighterHud plant={player} hp={playerHp} label="Tu planta" />
-          <FighterHud plant={enemy} hp={enemyHp} label="Rival" mirror />
+          <FighterHud plant={player} hp={playerHp} power={playerPower} label="Tu planta" />
+          <FighterHud plant={enemy} hp={enemyHp} power={enemyPower} label="Rival" mirror />
         </div>
-        <div className="mx-auto mt-2 w-full max-w-sm">
-          <div className="mb-1 flex items-center justify-between text-[10px] font-extrabold uppercase tracking-[0.16em] text-accent">
-            <span>Poder</span>
-            <span>{ready ? "Listo" : `${power}`}</span>
-          </div>
-          <div className="h-2.5 overflow-hidden rounded-full bg-black/50">
-            <div
-              className={`h-full rounded-full bg-accent transition-[width] duration-200 ${ready ? "shadow-[0_0_12px_var(--accent)]" : ""}`}
-              style={{ width: `${power}%` }}
-            />
-          </div>
-          <p className="mt-1 text-center text-[11px] font-extrabold uppercase tracking-[0.12em] text-white/80">
-            {log}
-          </p>
-        </div>
+        <p className="mt-2 text-center text-[11px] font-extrabold uppercase tracking-[0.12em] text-white/80">
+          {log}
+        </p>
       </div>
 
       {outcome ? null : (
@@ -452,20 +475,36 @@ function FightButton({
 function FighterHud({
   plant,
   hp,
+  power,
   label,
   mirror = false,
 }: {
   plant: SpritePlant;
   hp: number;
+  power: number;
   label: string;
   mirror?: boolean;
 }) {
+  const ready = power >= POWER_MAX;
+
   return (
     <div className={mirror ? "text-right" : ""}>
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/70">{label}</p>
       <h2 className="font-display text-lg leading-none text-white">{plant.name}</h2>
       <div className="mt-1">
         <HpBar hp={hp} max={plant.hp} mirror={mirror} />
+      </div>
+      <div className="mt-1.5" role="meter" aria-label={`Poder de ${plant.name}`} aria-valuemin={0} aria-valuemax={POWER_MAX} aria-valuenow={power}>
+        <div className={`mb-0.5 flex items-center justify-between text-[10px] font-extrabold uppercase tracking-[0.16em] text-accent ${mirror ? "flex-row-reverse" : ""}`}>
+          <span>Poder</span>
+          <span>{ready ? "Listo" : `${power}`}</span>
+        </div>
+        <div className={`h-2 overflow-hidden rounded-full bg-black/50 ${mirror ? "flex justify-end" : ""}`}>
+          <div
+            className={`h-full rounded-full bg-accent transition-[width] duration-200 ${ready ? "shadow-[0_0_12px_var(--accent)]" : ""}`}
+            style={{ width: `${power}%` }}
+          />
+        </div>
       </div>
     </div>
   );

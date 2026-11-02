@@ -12,6 +12,7 @@ export type SpritePlant = {
   hp: number;
   attack: number;
   defense: number;
+  league: string;
   sheet: BuiltinSpriteId;
   hue: number;
 };

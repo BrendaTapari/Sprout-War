@@ -10,7 +10,7 @@ import { PrimaryButton } from "@/components/primary-button";
 import { ScreenHeader } from "@/components/screen-header";
 import { useHydrated, useRoster } from "@/hooks/use-sprout-store";
 import { isPhotoExpired } from "@/lib/photo-cycle";
-import { BLUE_FIGHTER, plantOf } from "@/lib/sprites";
+import { BLUE_FIGHTER, CARNIVORE_LEAGUE, leagueTitle, plantOf } from "@/lib/sprites";
 import { addFighter, addNamedFighter, removeFighter, setActiveFighter, updatePhoto } from "@/lib/storage";
 import type { BuiltinSpriteId, SpriteId } from "@/lib/types";
 
@@ -35,7 +35,7 @@ const PROCESS_STEPS = [
   { delay: 1100, progress: 23, line: "Foto recibida" },
   { delay: 1750, progress: 47, line: "Separando la hoja del fondo" },
   { delay: 2500, progress: 69, line: "Leyendo pigmento y textura" },
-  { delay: 3300, progress: 88, line: "Calculando vida, ataque y defensa" },
+  { delay: 3300, progress: 88, line: "Liga de las carnívoras" },
   { delay: 4000, progress: 100, line: "Análisis listo" },
 ];
 
@@ -48,6 +48,13 @@ export function FighterScreen() {
   const [name, setName] = useState("");
   const [digitizing, setDigitizing] = useState<Digitizing | null>(null);
   const fighters = roster.fighters.filter((fighter) => fighter.spriteId !== "red");
+  const leagues: { name: string; members: typeof fighters }[] = [];
+  for (const owned of fighters) {
+    const name = leagueTitle(plantOf(owned).league);
+    const group = leagues.find((item) => item.name === name);
+    if (group) group.members.push(owned);
+    else leagues.push({ name, members: [owned] });
+  }
 
   function finishDigitizing(stats: PlantStats) {
     if (!digitizing) return;
@@ -103,86 +110,100 @@ export function FighterScreen() {
         {!hydrated ? (
           <div className="mt-8 h-40 animate-pulse rounded-[1.5rem] bg-white/10" />
         ) : (
-          <ul className="mt-6 space-y-3">
-            {fighters.map((owned) => {
-              const plant = plantOf(owned);
-              const active = roster.activeId === owned.spriteId;
-              const expired = now > 0 && isPhotoExpired(owned.photoAt, now);
-              return (
-                <li
-                  key={owned.spriteId}
-                  className={`relative rounded-[1.5rem] border bg-card p-3 ${
-                    active ? "border-accent/60" : "border-line"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => removeFighter(owned.spriteId)}
-                    aria-label={`Eliminar ${plant.name}`}
-                    className="absolute top-2.5 right-2.5 grid size-9 place-items-center rounded-full text-danger"
-                  >
-                    <TrashIcon />
-                  </button>
-                  <div className="flex gap-2">
-                    <div className="relative shrink-0">
-                      <PlantSprite
-                        spriteId={plant.id}
-                        anim="idle"
-                        label={plant.name}
-                        hue={plant.hue}
-                        sheet={plant.sheet}
-                      />
-                      <div className="pointer-events-none absolute inset-x-5 bottom-3 h-3 rounded-full bg-[oklch(0.34_0.06_90)]" />
-                    </div>
-                    <div className="min-w-0 flex-1 pr-8">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
-                        {active ? "En el ring" : plant.epithet}
-                      </p>
-                      <h2 className="mt-1 font-display text-2xl leading-none">{plant.name}</h2>
-                      <p className="mt-2 text-xs text-muted">
-                        Vida {plant.hp} · Ataque {plant.attack} · Defensa {plant.defense}
-                      </p>
-                      {owned.photo.startsWith("data:") ? (
-                        <PlantPhoto src={owned.photo} name={plant.name} />
-                      ) : null}
-                    </div>
-                  </div>
-                  <PhotoCountdown photoAt={owned.photoAt} />
-                  <div className="mt-3 grid gap-2">
-                    {active || expired ? null : (
-                      <button
-                        type="button"
-                        onClick={() => setActiveFighter(owned.spriteId)}
-                        className={`${cardButtonClass} bg-white/10 text-foreground`}
-                      >
-                        Elegir
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setCameraFor(owned.spriteId)}
-                      className={
-                        expired
-                          ? `${cardButtonClass} bg-danger text-white`
-                          : `${cardButtonClass} border-2 border-line bg-card text-foreground`
-                      }
-                    >
-                      {expired ? "Subir foto" : "Actualizar foto"}
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-            <li>
-              <button
-                type="button"
-                onClick={() => setCameraFor("new")}
-                className="flex min-h-28 w-full flex-col items-center justify-center rounded-[1.5rem] border-2 border-dotted border-muted px-4 py-8 font-display text-2xl leading-none text-foreground"
-              >
-                Agregar luchador
-              </button>
-            </li>
-          </ul>
+          <div className="mt-6">
+            {leagues.length > 0 ? (
+              <div>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-accent">
+                  Ligas
+                </p>
+                <div className="mt-4 space-y-6">
+                  {leagues.map((league) => (
+                    <section key={league.name} aria-label={league.name}>
+                      <h2 className="font-display text-3xl leading-none">{league.name}</h2>
+                      <ul className="mt-3 space-y-3">
+                        {league.members.map((owned) => {
+                          const plant = plantOf(owned);
+                          const active = roster.activeId === owned.spriteId;
+                          const expired = now > 0 && isPhotoExpired(owned.photoAt, now);
+                          return (
+                            <li
+                              key={owned.spriteId}
+                              className={`relative rounded-[1.5rem] border bg-card p-3 ${
+                                active ? "border-accent/60" : "border-line"
+                              }`}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => removeFighter(owned.spriteId)}
+                                aria-label={`Eliminar ${plant.name}`}
+                                className="absolute top-2.5 right-2.5 grid size-9 place-items-center rounded-full text-danger"
+                              >
+                                <TrashIcon />
+                              </button>
+                              <div className="flex gap-2">
+                                <div className="relative shrink-0">
+                                  <PlantSprite
+                                    spriteId={plant.id}
+                                    anim="idle"
+                                    label={plant.name}
+                                    hue={plant.hue}
+                                    sheet={plant.sheet}
+                                  />
+                                  <div className="pointer-events-none absolute inset-x-5 bottom-3 h-3 rounded-full bg-[oklch(0.34_0.06_90)]" />
+                                </div>
+                                <div className="min-w-0 flex-1 pr-8">
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+                                    {active ? "En el ring" : plant.epithet}
+                                  </p>
+                                  <h3 className="mt-1 font-display text-2xl leading-none">{plant.name}</h3>
+                                  <p className="mt-2 text-xs text-muted">
+                                    Vida {plant.hp} · Ataque {plant.attack} · Defensa {plant.defense}
+                                  </p>
+                                  {owned.photo.startsWith("data:") ? (
+                                    <PlantPhoto src={owned.photo} name={plant.name} />
+                                  ) : null}
+                                </div>
+                              </div>
+                              <PhotoCountdown photoAt={owned.photoAt} />
+                              <div className="mt-3 grid gap-2">
+                                {active || expired ? null : (
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveFighter(owned.spriteId)}
+                                    className={`${cardButtonClass} bg-white/10 text-foreground`}
+                                  >
+                                    Elegir
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => setCameraFor(owned.spriteId)}
+                                  className={
+                                    expired
+                                      ? `${cardButtonClass} bg-danger text-white`
+                                      : `${cardButtonClass} border-2 border-line bg-card text-foreground`
+                                  }
+                                >
+                                  {expired ? "Subir foto" : "Actualizar foto"}
+                                </button>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </section>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setCameraFor("new")}
+              className="mt-3 flex min-h-28 w-full flex-col items-center justify-center rounded-[1.5rem] border-2 border-dotted border-muted px-4 py-8 font-display text-2xl leading-none text-foreground"
+            >
+              Agregar luchador
+            </button>
+          </div>
         )}
       </main>
       {cameraFor ? (
@@ -412,6 +433,9 @@ function AnalysisResult({
       </div>
       <p className="text-center text-sm text-white/70">
         {previousHp == null ? "Salió de la foto." : "La foto le sumó vida."}
+      </p>
+      <p className="mt-3 text-center text-[11px] font-extrabold uppercase tracking-[0.16em] text-accent">
+        {CARNIVORE_LEAGUE}
       </p>
       <div className="mt-5 grid gap-4">
         <StatRow
