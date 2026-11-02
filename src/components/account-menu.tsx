@@ -76,14 +76,10 @@ export function AccountScreen() {
 
   return (
     <>
-      <main className="px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[calc(8.75rem+env(safe-area-inset-bottom))]">
-        <ScreenHeader
-          eyebrow="Perfil"
-          title="Cuenta"
-          subtitle="Los datos del jugador de la demo."
-        />
-        <section className="mt-8 flex flex-col items-center rounded-[1.75rem] border border-line bg-card px-5 py-8">
-          <div className="size-32 overflow-hidden rounded-full border border-accent/40">
+      <main className="min-w-0 max-w-full overflow-x-hidden px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[calc(9.15rem+env(safe-area-inset-bottom))]">
+        <ScreenHeader eyebrow="Perfil" title="Cuenta" />
+        <section className="mt-8 flex w-full min-w-0 flex-col items-center rounded-[1.75rem] border border-line bg-card px-5 py-8">
+          <div className="size-32 shrink-0 overflow-hidden rounded-full border border-accent/40">
             <ProfilePhoto src={shownPhoto(draft.photo)} alt="Foto de perfil" priority />
           </div>
           <button
@@ -93,7 +89,7 @@ export function AccountScreen() {
           >
             Cambiar foto de perfil
           </button>
-          <h2 className="mt-6 font-display text-4xl leading-none">
+          <h2 className="mt-6 max-w-full text-center font-display text-4xl leading-none break-words">
             {draft.name || MOCK_ACCOUNT.name}
           </h2>
           <p className="mt-2 text-sm text-muted">{draft.email || MOCK_ACCOUNT.email}</p>
@@ -168,7 +164,7 @@ function ProfilePhoto({
         width={512}
         height={512}
         priority={priority}
-        className="size-full object-cover object-[center_28%]"
+        className="size-full max-w-full object-cover object-[center_28%]"
       />
     );
   }

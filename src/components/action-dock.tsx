@@ -11,7 +11,7 @@ export function ActionDock({
 
   return (
     <div
-      className={`pointer-events-none fixed inset-x-0 z-30 flex justify-center px-5 ${position}`}
+      className={`pointer-events-none fixed inset-x-0 z-30 flex justify-center px-6 ${position}`}
     >
       <div className="pointer-events-auto w-full max-w-[390px]">{children}</div>
     </div>

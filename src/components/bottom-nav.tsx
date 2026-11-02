@@ -18,7 +18,7 @@ export function BottomNav() {
       aria-label="Principal"
       className="fixed inset-x-0 bottom-0 z-20 flex justify-center"
     >
-      <div className="w-full max-w-[430px] rounded-t-[1.6rem] border border-b-0 border-line bg-[oklch(0.2_0.045_150/0.96)] pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_oklch(0.1_0.02_150/0.45)]">
+      <div className="w-full max-w-[430px] rounded-t-[1.6rem] border border-b-0 border-line bg-[oklch(0.2_0.045_150)] px-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_oklch(0.1_0.02_150/0.45)]">
         <ul className="grid h-[4.4rem] grid-cols-4">
           {ITEMS.map((item) => {
             const active =

@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
 import { analyzePlantStats, withMoreLife, type PlantStats } from "@/lib/analyze-plant";
 import { CameraCapture } from "@/components/camera-capture";
 import { PlantSprite } from "@/components/plant-sprite";
@@ -207,37 +206,31 @@ export function FighterScreen() {
         )}
       </main>
       {cameraFor ? (
-        <ScreenCover>
-          <CameraCapture
-            title={cameraFor === "new" ? "Agregar luchador" : "Actualizar foto"}
-            onCapture={onCapture}
-            onClose={() => setCameraFor(null)}
-          />
-        </ScreenCover>
+        <CameraCapture
+          title={cameraFor === "new" ? "Agregar luchador" : "Actualizar foto"}
+          onCapture={onCapture}
+          onClose={() => setCameraFor(null)}
+        />
       ) : null}
       {pendingPhoto ? (
-        <ScreenCover>
-          <NameModal
-            photo={pendingPhoto}
-            name={name}
-            onName={setName}
-            onClose={() => setPendingPhoto(null)}
-            onConfirm={startDigitizing}
-          />
-        </ScreenCover>
+        <NameModal
+          photo={pendingPhoto}
+          name={name}
+          onName={setName}
+          onClose={() => setPendingPhoto(null)}
+          onConfirm={startDigitizing}
+        />
       ) : null}
       {digitizing ? (
-        <ScreenCover>
-          <DigitizingScreen
-            photo={digitizing.photo}
-            name={digitizing.name}
-            spriteId={digitizing.spriteId}
-            sheet={digitizing.sheet}
-            hue={digitizing.hue}
-            previousHp={digitizing.previousHp}
-            onDone={finishDigitizing}
-          />
-        </ScreenCover>
+        <DigitizingScreen
+          photo={digitizing.photo}
+          name={digitizing.name}
+          spriteId={digitizing.spriteId}
+          sheet={digitizing.sheet}
+          hue={digitizing.hue}
+          previousHp={digitizing.previousHp}
+          onDone={finishDigitizing}
+        />
       ) : null}
     </>
   );
@@ -303,11 +296,6 @@ function NameModal({
       </form>
     </div>
   );
-}
-
-function ScreenCover({ children }: { children: ReactNode }) {
-  if (typeof document === "undefined") return null;
-  return createPortal(children, document.body);
 }
 
 function DigitizingScreen({

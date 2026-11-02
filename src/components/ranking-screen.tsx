@@ -2,9 +2,7 @@
 
 import { useRef, useState, type TouchEvent } from "react";
 import { ScreenHeader } from "@/components/screen-header";
-import { useHydrated, useRoster } from "@/hooks/use-sprout-store";
 import { PLAYER_LEAGUES, TEAM_RANKING, championOfLeagues } from "@/lib/ranking";
-import { plantOf } from "@/lib/sprites";
 
 type RankingTab = "players" | "teams";
 type LeagueName = (typeof PLAYER_LEAGUES)[number]["name"];
@@ -14,10 +12,6 @@ function isLeagueName(value: string): value is LeagueName {
 }
 
 export function RankingScreen() {
-  const hydrated = useHydrated();
-  const roster = useRoster();
-  const active = roster.fighters.find((fighter) => fighter.spriteId === roster.activeId);
-  const activeName = active ? plantOf(active).name : null;
   const [tab, setTab] = useState<RankingTab>("players");
   const [leagueName, setLeagueName] = useState<LeagueName>(PLAYER_LEAGUES[0].name);
   const league = PLAYER_LEAGUES.find((item) => item.name === leagueName) ?? PLAYER_LEAGUES[0];
@@ -38,7 +32,7 @@ export function RankingScreen() {
   }
 
   return (
-    <main className="px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
+    <main className="min-w-0 max-w-full overflow-x-hidden px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
       <ScreenHeader
         eyebrow="Temporada"
         title="Ranking"
@@ -66,7 +60,7 @@ export function RankingScreen() {
         </TabButton>
       </div>
       <div
-        className="mt-5 overflow-hidden"
+        className="mt-5 w-full min-w-0 overflow-hidden"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
@@ -75,7 +69,7 @@ export function RankingScreen() {
             tab === "teams" ? "-translate-x-1/2" : "translate-x-0"
           }`}
         >
-          <div className={`w-1/2 shrink-0 ${tab === "teams" ? "h-0 overflow-hidden" : ""}`}>
+          <div className={`w-1/2 min-w-0 shrink-0 ${tab === "teams" ? "h-0 overflow-hidden" : ""}`}>
             {champion ? (
               <section className="rounded-[1.5rem] border border-accent/50 bg-card p-4">
                 <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-accent">
@@ -129,7 +123,7 @@ export function RankingScreen() {
               </ol>
             </section>
           </div>
-          <ol className={`w-1/2 shrink-0 space-y-3 ${tab === "players" ? "h-0 overflow-hidden" : ""}`}>
+          <ol className={`w-1/2 min-w-0 shrink-0 space-y-3 ${tab === "players" ? "h-0 overflow-hidden" : ""}`}>
             {TEAM_RANKING.map((row) => (
               <RankCard
                 key={row.place}
@@ -143,15 +137,6 @@ export function RankingScreen() {
           </ol>
         </div>
       </div>
-      {hydrated && activeName ? (
-        <p className="mt-6 text-center text-sm text-muted">
-          Tu representante:{" "}
-          <span className="font-medium text-foreground">{activeName}</span>
-        </p>
-      ) : null}
-      <p className="mt-8 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-        Demo universitaria · premios ficticios
-      </p>
     </main>
   );
 }
@@ -208,7 +193,7 @@ function RankCard({
           {String(place).padStart(2, "0")}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-display text-[1.7rem] leading-none">{title}</p>
+          <p className="font-display text-[1.7rem] leading-none break-words">{title}</p>
           <p className="mt-1.5 text-sm text-muted">{detail}</p>
           <p className="mt-3 inline-flex rounded-full bg-accent/15 px-3 py-1 text-[11px] font-semibold tracking-wide text-accent uppercase">
             {sponsor}

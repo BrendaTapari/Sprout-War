@@ -6,6 +6,7 @@ import { HpBar } from "@/components/hp-bar";
 import { PlantSprite } from "@/components/plant-sprite";
 import { FightRing } from "@/components/fight-ring";
 import { ResultModal } from "@/components/result-modal";
+import { usePhonePose } from "@/components/presentation";
 import { rollDamage } from "@/lib/damage";
 import { clearBattle } from "@/lib/storage";
 import type { SpriteAnim, SpritePlant } from "@/lib/types";
@@ -38,6 +39,7 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
   const [log, setLog] = useState("Movete con la izquierda. Pegá con la derecha.");
   const [floaters, setFloaters] = useState<Floater[]>([]);
   const [landscape, setLandscape] = useState<boolean | null>(null);
+  const pose = usePhonePose();
 
   const endedRef = useRef(false);
   const aliveRef = useRef(true);
@@ -52,6 +54,11 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
   const timers = useRef<number[]>([]);
 
   useEffect(() => {
+    const wide = window.matchMedia("(min-width: 840px)");
+    if (wide.matches) {
+      setLandscape(pose === "landscape");
+      return;
+    }
     const media = window.matchMedia("(orientation: landscape)");
     const read = () => setLandscape(media.matches);
     read();
@@ -66,7 +73,7 @@ export function LiveBattle({ player, enemy }: { player: SpritePlant; enemy: Spri
       window.removeEventListener("resize", read);
       screen.orientation?.unlock?.();
     };
-  }, []);
+  }, [pose]);
 
   useEffect(() => {
     aliveRef.current = true;
@@ -488,7 +495,7 @@ function FighterHud({
   const ready = power >= POWER_MAX;
 
   return (
-    <div className={mirror ? "text-right" : ""}>
+    <div className={mirror ? "ml-auto w-full max-w-64 text-right" : "w-full max-w-64"}>
       <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/70">{label}</p>
       <h2 className="font-display text-lg leading-none text-white">{plant.name}</h2>
       <div className="mt-1">

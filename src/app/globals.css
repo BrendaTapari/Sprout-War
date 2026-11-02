@@ -269,3 +269,113 @@ button:not(:disabled) {
     transform: rotate(90deg);
   }
 }
+
+.presentation-stage {
+  height: 100dvh;
+  background: var(--canvas);
+}
+
+.phone,
+.phone-screen {
+  height: 100%;
+}
+
+.phone-notch,
+.phone-button {
+  display: none;
+}
+
+@media (min-width: 840px) {
+  .presentation-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: 28px;
+    background:
+      radial-gradient(circle at 50% 42%, oklch(0.3 0.045 155), transparent 42%),
+      oklch(0.14 0.02 155);
+  }
+
+  .phone {
+    --phone-h: min(860px, calc(100dvh - 56px));
+    position: relative;
+    width: min(calc(var(--phone-h) * 9 / 19.5), calc(100vw - 56px));
+    height: var(--phone-h);
+    min-width: 0;
+    justify-self: center;
+    border-radius: 48px;
+    padding: 14px;
+    background: linear-gradient(160deg, #3a3a3a, #111 42%, #242424);
+    box-shadow:
+      0 28px 70px oklch(0.08 0.02 155 / 0.55),
+      inset 0 0 0 2px #4a4a4a,
+      inset 0 0 0 6px #0a0a0a;
+    transition: transform 0.8s cubic-bezier(0.45, 0.05, 0.2, 1);
+  }
+
+  .phone[data-pose="turning"] {
+    transform: rotate(-90deg);
+  }
+
+  .phone[data-pose="landscape"] {
+    --phone-landscape-h: min(420px, calc(100dvh - 56px));
+    height: var(--phone-landscape-h);
+    width: min(calc(var(--phone-landscape-h) * 19.5 / 9), calc(100vw - 56px));
+    transform: none;
+    transition: none;
+  }
+
+  .phone-screen {
+    position: relative;
+    min-width: 0;
+    max-width: 100%;
+    overflow: clip;
+    box-sizing: border-box;
+    height: 100%;
+    padding-top: 30px;
+    border-radius: 34px;
+    clip-path: inset(0 round 34px);
+    background: var(--background);
+    transform: translateZ(0);
+  }
+
+  .phone[data-pose="landscape"] .phone-screen {
+    padding-top: 0;
+    padding-left: 28px;
+  }
+
+  .phone-notch {
+    display: block;
+    position: absolute;
+    z-index: 40;
+    top: 10px;
+    left: 50%;
+    width: 108px;
+    height: 22px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: #0a0a0a;
+    pointer-events: none;
+  }
+
+  .phone[data-pose="landscape"] .phone-notch {
+    top: 50%;
+    left: 14px;
+    width: 22px;
+    height: 92px;
+    transform: translateY(-50%);
+  }
+
+  .phone-button {
+    display: block;
+    position: absolute;
+    top: 22%;
+    right: -3px;
+    width: 4px;
+    height: 74px;
+    border-radius: 2px;
+    background: #2a2a2a;
+  }
+
+}
