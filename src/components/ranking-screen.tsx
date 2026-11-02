@@ -7,6 +7,11 @@ import { PLAYER_LEAGUES, TEAM_RANKING, championOfLeagues } from "@/lib/ranking";
 import { plantOf } from "@/lib/sprites";
 
 type RankingTab = "players" | "teams";
+type LeagueName = (typeof PLAYER_LEAGUES)[number]["name"];
+
+function isLeagueName(value: string): value is LeagueName {
+  return PLAYER_LEAGUES.some((item) => item.name === value);
+}
 
 export function RankingScreen() {
   const hydrated = useHydrated();
@@ -14,7 +19,7 @@ export function RankingScreen() {
   const active = roster.fighters.find((fighter) => fighter.spriteId === roster.activeId);
   const activeName = active ? plantOf(active).name : null;
   const [tab, setTab] = useState<RankingTab>("players");
-  const [leagueName, setLeagueName] = useState(PLAYER_LEAGUES[0].name);
+  const [leagueName, setLeagueName] = useState<LeagueName>(PLAYER_LEAGUES[0].name);
   const league = PLAYER_LEAGUES.find((item) => item.name === leagueName) ?? PLAYER_LEAGUES[0];
   const champion = championOfLeagues();
   const touchX = useRef<number | null>(null);
@@ -92,7 +97,9 @@ export function RankingScreen() {
               <span className="relative mt-2 block">
                 <select
                   value={league.name}
-                  onChange={(event) => setLeagueName(event.target.value)}
+                  onChange={(event) => {
+                    if (isLeagueName(event.target.value)) setLeagueName(event.target.value);
+                  }}
                   className="h-12 w-full appearance-none rounded-2xl border border-line bg-card px-4 pr-10 font-display text-xl text-foreground outline-none focus:border-accent"
                 >
                   {PLAYER_LEAGUES.map((item) => (
